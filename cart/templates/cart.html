@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block content %}
+        <br><br><br>
+        <section class="page-section about-heading">
+            <div class="container">
+                {% comment %} <img class="img-fluid rounded about-heading-img mb-3 mb-lg-0" src="assets/img/about.jpg" alt="..." /> {% endcomment %}
+                <div class="about-heading-content">
+                    <div class="row">
+                        <div class="col-xl-9 col-lg-10 mx-auto">
+                            <div class="bg-faded rounded p-5">
+                                <h2 class="section-heading mb-4">
+                                    <span class="section-heading-upper">Shopping Cart</span>
+                                    <span class="section-heading-lower">View your cart..</span>
+                                </h2>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="container">
+        {% if cart_products %}
+            {% for product in cart_products %}
+            <div class="bg-faded rounded p-5 card col-xl-9 col-lg-10 mx-auto mb-4">
+              <div class="d-flex align-items-center">
+                
+                <div class="product-details ml-4">
+                  <h2 class="section-heading mb-4">
+                    <span class="section-heading-upper">{{product.name}}</span>
+                    <span class="section-heading-lower">{{product.category}}</span>
+                  </h2>
+                  <p>{{product.description}}</p>
+                  <p class="mb-0">
+                    {% if product.is_sale %}
+                      Price : <strike>₹{{product.price}}</strike>&nbsp;₹{{product.sale_price}}
+                    {% else %}
+                      Price : ₹{{product.price}}
+                    {% endif %}
+                  </p><br>
+                  <div class="row justify-content-left">
+                    <div class="col-md-3">Quantity:</div>
+                    <div class="col-md-3">
+                      <select class="form-select mb-3" aria-label="Default select example" id="select{{product.id}}">
+                      <option selected>
+                        {% for key,value in quantities.items %}
+                            {% if key == product.id|slugify %}
+                                {{value}}
+                            {% endif %}
+                        {% endfor %}
+                      </option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5 ">5</option>
+                      </select>
+
+                      
+                    </div>
+                    <div class="col-md-3"><button type="button" data-index="{{product.id}}" class="btn btn-secondary update-cart">Update</button></div><br></br>
+                    <div class="col-md-3"><button type="button" data-index="{{product.id}}" class="btn btn-danger delete-product">Remove</button></div>
+                  </div>
+                  
+                </div>
+                <img class="product-img " src="{{product.image.url}}" alt="{{product.name}}" />
+                
+              </div>
+              
+            </div>
+            
+            {% endfor %}
+            <div class="bg-faded rounded p-5 card col-xl-9 col-lg-10 mx-auto mb-4">
+              <div class="d-flex align-items-center">
+                
+                <div class="product-details ml-3 row">
+                  <h2 class="section-heading mb-4 col-md-9">
+                    <span class="section-heading-upper"><strong>Total: ₹ {{total}} </strong></span>
+                  </h2>
+                  <a class="btn btn-xl btn-success col-md-3" href="{% url 'checkout' %}"><h4>Checkout</h4></a>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="bg-faded rounded p-5 card col-xl-5 col-lg-10 mx-auto mb-4">
+                <div class="d-flex flex-column align-items-center justify-content-center text-center">
+                  <div class="product-details">
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp; Oops! There's nothing in your cart right now...</p> <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shop from our store to support us. ❤️</p>
+                    <div class="intro-button-container">
+                      <div class="intro-button mx-0">
+                        <a class="btn btn-outline-primary btn-secondary" href="{% url 'store' %}">Store</a>
+                      </div><br>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+                
+        {% endif %}
+          </div>
+          
+
+
+<script>
+    $(document).on('click','.update-cart', function(e){
+      e.preventDefault();
+      var productId=$(this).data('index');
+      $.ajax({
+        type: 'POST',
+        url: '{% url 'cart_update' %}',
+        data: {
+          product_id: productId,
+          product_qty: $('#select'+productId+' option:selected').val(),
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          action: 'post'
+        },
+        success: function(json){
+          location.reload();
+        },
+        error: function(xhr, errmsg, err){
+          console.error("error",error);
+        }
+      });
+    })
+
+    $(document).on('click','.delete-product', function(e){
+      e.preventDefault();
+      var productId=$(this).data('index');
+      $.ajax({
+        type: 'POST',
+        url: '{% url 'cart_delete' %}',
+        data: {
+          product_id: productId,
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          action: 'post'
+        },
+        success: function(json){
+          location.reload();
+        },
+        error: function(xhr, errmsg, err){
+          console.error("error",error);
+        }
+      });
+    })
+  </script>
+  {% endblock %}

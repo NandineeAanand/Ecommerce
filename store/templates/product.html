@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content%}
+<br><br><br>
+
+<section class="page-section about-heading">
+  <div class="container">
+    
+      <div class="about-heading-content">
+        <div class="col-xl-9 col-lg-10 mx-auto">
+          
+          <div class="bg-faded rounded p-5">
+            {% if product.is_sale %}
+            <div class="badge text-red bg-dark rounded-pill" style="top:0rem; right: 0rem ">Sale</div><br></br>
+            {% endif%}
+            <div class="row">
+            <img class="img-fluid rounded about-heading-img mb-3 mb-lg-5" src="{{product.image.url}}" alt="{{product.name}}" />
+              <h2 class="section-heading mb-4">
+                <span class="section-heading-upper">{{product.name}}</span>
+                <span class="section-heading-lower">{{product.category}}</span>
+              </h2>
+              <p>{{product.description}}</p>
+              <p class="mb-0">
+                {% if product.is_sale %}
+                  Price : <strike>₹{{product.price}}</strike>&nbsp;{{product.sale_price}}
+                {% else %}
+                  Price : ₹{{product.price}}
+                {% endif%}
+                <br><br>
+                <div class="row justify-content-left">
+                  <div class="col-md-2">Quantity:</div>
+                  <div class="col-md-2">
+                    <select class="form-select mb-3" aria-label="Default select example" id="quantity_cart">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="3">4</option>
+                    <option value="3">5</option>
+                    </select>
+                  </div>
+                </div>
+
+              </p><br><br>
+              <div class = "intro-button-container ">
+                <div class="intro-button mx-auto"><button type=" button" value="{{ product.id }}" class="btn btn-outline-primary btn-secondary " id="add-cart">Add to Cart</button>
+                </div><br>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+</section>
+
+<script>
+  $(document).on('click','#add-cart', function(e){
+    e.preventDefault();
+    $.ajax({
+      type: 'POST',
+      url: '{% url 'cart_add' %}',
+      data: {
+        product_id: $('#add-cart').val(),
+        product_qty: $('#quantity_cart option:selected').text(),
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        action: 'post'
+      },
+      success: function(json){
+        document.getElementById('cart_quantity').textContent=json.Qty
+        location.reload();
+      },
+      error: function(xhr, errmsg, err){
+        
+      }
+    });
+  })
+</script>
+{% endblock %}
